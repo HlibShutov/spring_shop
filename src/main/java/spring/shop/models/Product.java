@@ -2,17 +2,37 @@ package spring.shop.models;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
 public class Product {
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
-    private Long product_id;
+    private Long productId;
     private String name;
     private String description;
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Image> images;
+    private BigDecimal price;
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    private Integer quantity;
 
     public List<Image> getImages() {
         return images;
@@ -38,11 +58,11 @@ public class Product {
         this.name = name;
     }
 
-    public Long getProduct_id() {
-        return product_id;
+    public Long getProductId() {
+        return productId;
     }
 
-    public void setProduct_id(Long product_id) {
-        this.product_id = product_id;
+    public void setProductId(Long productId) {
+        this.productId = productId;
     }
 }

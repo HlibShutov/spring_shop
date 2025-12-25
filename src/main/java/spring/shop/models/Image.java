@@ -1,15 +1,17 @@
 package spring.shop.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 @Entity
 public class Image {
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
-    private Long image_id;
+    private Long imageId;
 
     @ManyToOne
-    @JoinColumn(name="product_id", nullable=false)
+    @JoinColumn(name="productId", nullable=false)
+    @JsonBackReference
     private Product product;
 
     public String getPath() {
