@@ -1,13 +1,11 @@
 package spring.shop.services;
 
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Service;
 import spring.shop.exceptions.CustomerNotFound;
-import spring.shop.exceptions.ProductNotFound;
 import spring.shop.models.Customer;
-import spring.shop.models.Product;
 import spring.shop.repositories.CustomerRepository;
 
-@RestController
+@Service
 public class CustomerService {
     private final CustomerRepository repository;
 

@@ -20,7 +20,6 @@ public class CustomerController {
     }
 
     @GetMapping(value = "/customer/{id}", produces = "application/json")
-    @ResponseBody
     public Customer getCustomer(@PathVariable Long id) {
         return service.getCustomer(id);
     }

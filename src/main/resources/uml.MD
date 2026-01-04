@@ -41,7 +41,9 @@ ProductsRepository <|.. CrudRepository
         +getCart(Long id) Cart
         +createCart(Optional~Long~ customerId) Long
         +deleteProductFromCart(Long id)
-        +addProductToCart(Long id)
+        +addProductToCart(Long cartId, Long productId, Integer quantity)
+        +removeProductFromCart(Long cartId, Long productId, Integer quantity)
+        +deleteProductFromCart(Long cartId, Long productId)
         +deleteCart(Long id)
     }
     class CartService {
@@ -49,11 +51,14 @@ ProductsRepository <|.. CrudRepository
         +getCart(Long id) Cart
         +createCart(Optional~Long~ customerId) Long
         +deleteProductFromCart(Long id)
-        +addProductToCart(Long id)
+        +addProductToCart(Long cartId, Long productId, Integer quantity)
+        +removeProductFromCart(Long cartId, Long productId, Integer quantity)
+        +deleteProductFromCart(Long cartId, Long productId)
         +deleteCart(Long id)
     }
     class CartRepository {
         <<Interface>>
+        existsByCustomer_CustomerId(Long customerId) boolean
     }
     CartController <.. CartService
     CartService <.. CartRepository
@@ -61,14 +66,19 @@ ProductsRepository <|.. CrudRepository
 
     class Cart {
         -Long cartId
-        -Map~Product, Integer~ products
+        -List~Product~ items
         -Optional~Customer~ customer
         -BigDecimal cost
     }
+    class CartItem {
+        -Long cartItemId
+        -Product product
+        -Integer quantity
+    }
 
-    CartRepository *-- Product
     CartRepository *-- Cart
-    Cart o-- Product
+    CartItem o-- Product
+    Cart *-- CartItem
 
     class Customer {
         -Long customerId

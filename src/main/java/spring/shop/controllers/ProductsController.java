@@ -16,7 +16,6 @@ public class ProductsController {
         this.service = productsService;
     }
     @GetMapping(value = "/products", produces = "application/json")
-    @ResponseBody
     public List<Map<String, Object>> getProducts() {
         Iterable<Product> products = service.getProducts();
         List<Map<String, Object>> response = new ArrayList<>();
@@ -33,7 +32,6 @@ public class ProductsController {
     }
 
     @GetMapping(value = "/product/{id}", produces = "application/json")
-    @ResponseBody
     public Map<String, Object> getProduct(@PathVariable Long id) {
         Product product = service.getProduct(id);
         Map<String, Object> serializedProduct = new HashMap<>();
