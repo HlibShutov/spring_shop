@@ -16,4 +16,9 @@ public class CustomerService {
     public Customer getCustomer(Long id) throws CustomerNotFound {
         return repository.findById(id).orElseThrow(() -> new CustomerNotFound("No such customer with ID %d".formatted(id)));
     }
+
+    public Long createCustomer(Customer customer) {
+        repository.save(customer);
+        return customer.getCustomerId();
+    }
 }

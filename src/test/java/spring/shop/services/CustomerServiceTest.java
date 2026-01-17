@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -19,6 +21,9 @@ class CustomerServiceTest {
     private CustomerRepository customerRepository;
 
     private CustomerService customerService;
+
+    @Captor
+    private ArgumentCaptor<Customer> customerCaptor;
 
     @BeforeEach
     public void setUp() {
@@ -37,7 +42,7 @@ class CustomerServiceTest {
     }
 
     @Test
-    public void testGetProductNotExist() {
+    public void testGetCustomerNotExist() {
         Mockito
                 .when(customerRepository.findById((long) 0))
                 .thenReturn(Optional.empty());
@@ -45,5 +50,15 @@ class CustomerServiceTest {
             customerService.getCustomer((long)0);
         });
         Mockito.verify(customerRepository).findById((long)0);
+    }
+
+
+    @Test
+    public void testCreateCustomer() {
+        Customer testCustomer = new Customer();
+        customerService.createCustomer(testCustomer);
+        Mockito.verify(customerRepository).save(customerCaptor.capture());
+
+        Assertions.assertEquals(testCustomer, customerCaptor.getValue());
     }
 }

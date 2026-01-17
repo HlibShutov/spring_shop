@@ -55,4 +55,7 @@ public class Customer {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="addressId", nullable=false)
     private Address address;
+
+    @OneToOne(mappedBy = "customer")
+    private Account account;
 }

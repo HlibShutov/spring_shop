@@ -1,10 +1,7 @@
 package spring.shop.models;
 
 import jakarta.annotation.Nullable;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class Address {
@@ -13,6 +10,17 @@ public class Address {
     private Long addressId;
     private String address;
     private String postalCode;
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    @OneToOne(mappedBy = "address")
+    private Customer customer;
 
     public String getAdditionalInfo() {
         return additionalInfo;

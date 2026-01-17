@@ -23,6 +23,17 @@ public class CustomerController {
     public Customer getCustomer(@PathVariable Long id) {
         return service.getCustomer(id);
     }
+
+    @PostMapping(value = "/create_customer/guest", produces = "application/json")
+    public Long createCustomerGuest(@RequestBody Customer customer) {
+        return service.createCustomer(customer);
+    }
+
+    @PostMapping(value = "/create_customer/account", produces = "application/json")
+    public Long createCustomerAccount(@RequestBody Customer customer) {
+        return service.createCustomer(customer);
+    }
+
     @ExceptionHandler(CustomerNotFound.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, Object> handleCustomerNotFound(CustomerNotFound e) {

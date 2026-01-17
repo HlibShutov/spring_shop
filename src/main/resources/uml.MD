@@ -86,6 +86,8 @@ ProductsRepository <|.. CrudRepository
         -String lastname
         -String email
         -Address address
+        @Nullable
+        -Account account
     }
     class Address {
         -Long addressId
@@ -100,10 +102,12 @@ ProductsRepository <|.. CrudRepository
     class CustomerController {
         -CustomerService service
         +getCustomer(Long id) Customer
+        +createCustomer(Customer customer) Long
     }
     class CustomerService {
         -CustomerRepository repository
         +getCustomer(Long id) Customer
+        +createCustomer(Customer customer) Long
     }
     class CustomerRepository {
         <<Interface>>
@@ -112,3 +116,28 @@ ProductsRepository <|.. CrudRepository
     CustomerService <.. CustomerRepository
     CustomerController <.. CustomerService
     CustomerRepository *-- Customer
+
+    class Account {
+        -String username
+        -String password
+        @Nullable
+        -Customer customer
+    }
+
+    Customer o--o Account
+    
+    class AccountRepository {
+        <<Interface>>
+    }
+    class AccountService {
+        -AccountRepository repository
+        +createAccount(String username, String password);
+    }
+    class AccountController {
+        -AccountService service
+        +createAccount(String username, String password);
+    }
+    AccountRepository <|.. CrudRepository
+    AccountService <.. AccountRepository
+    AccountController <.. AccountService
+    AccountRepository *-- Account
