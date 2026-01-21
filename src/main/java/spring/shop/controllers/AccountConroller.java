@@ -1,24 +1,26 @@
 package spring.shop.controllers;
 
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import spring.shop.exceptions.AccountNotFound;
 import spring.shop.services.AccountService;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 public class AccountConroller {
-    public AccountConroller(AccountService service, AuthenticationManager authenticationManager) {
+    public AccountConroller(AccountService service) {
         this.service = service;
-        this.authenticationManager = authenticationManager;
     }
 
     private final AccountService service;
-    private final AuthenticationManager authenticationManager;
 
     public record authDTO(String username, String password) {
+    }
+    public record jwtDTO(String access, String refresh) {
+    }
+    public record accessTokenRequest(String token) {
     }
 
     @PostMapping("/create_account")
@@ -27,11 +29,21 @@ public class AccountConroller {
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody authDTO loginRequest) {
-        Authentication authenticationRequest =
-                UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.username(), loginRequest.password());
-        Authentication authenticationResponse =
-                this.authenticationManager.authenticate(authenticationRequest);
-        return "logged in";
+    public jwtDTO login(@RequestBody authDTO loginRequest) {
+        return service.login(loginRequest.username(), loginRequest.password());
+    }
+
+    @PostMapping("/access_token")
+    public String accessToken(@RequestBody accessTokenRequest refreshToken) {
+        return service.accessToken(refreshToken.token());
+    }
+
+    @ExceptionHandler(AccountNotFound.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, Object> handleAccountNotFound(AccountNotFound e) {
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("error", "Account not found");
+        errorResponse.put("message", e.getMessage());
+        return errorResponse;
     }
 }

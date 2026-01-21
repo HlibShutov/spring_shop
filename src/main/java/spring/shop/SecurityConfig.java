@@ -9,9 +9,11 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import spring.shop.services.AccountDetailsService;
 
 @Configuration
@@ -20,15 +22,21 @@ public class SecurityConfig {
 
     @Autowired
     private AccountDetailsService accountDetailsService;
+    @Autowired
+    private JwtAuthFilter jwtAuthFilter;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(CsrfConfigurer::disable)
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authorizeHttpRequests((requests) -> requests
-                .requestMatchers("/create_account", "/login").permitAll()
-//                .anyRequest().authenticated()
-        );
-
+                    .requestMatchers("/create_account", "/login", "/access_token", "/products", "/product/{id}").permitAll()
+                    .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        ;
         return http.build();
     }
 

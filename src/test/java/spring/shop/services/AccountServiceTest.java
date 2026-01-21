@@ -9,6 +9,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import spring.shop.models.Account;
 import spring.shop.repositories.AccountRepository;
@@ -22,13 +23,17 @@ class AccountServiceTest {
     private AccountRepository accountRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
+    @Mock
+    private AuthenticationManager authenticationManager;
+    @Mock
+    private JwtService jwtService;
     @Captor
     private ArgumentCaptor<String> passwordCaptor;
     private AccountService accountService;
 
     @BeforeEach
     void setUp() {
-        accountService = new AccountService(accountRepository, passwordEncoder);
+        accountService = new AccountService(accountRepository, passwordEncoder, authenticationManager, jwtService);
     }
 
     @Test

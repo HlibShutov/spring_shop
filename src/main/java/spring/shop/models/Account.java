@@ -15,8 +15,7 @@ public class Account implements UserDetails {
     private String username;
     @Column(name = "password", length = 64, nullable = false)
     private String password;
-    @Nullable
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name="customerId", nullable=true)
     private Customer customer;
 

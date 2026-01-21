@@ -1,11 +1,10 @@
 package spring.shop.services;
 
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import spring.shop.exceptions.*;
-import spring.shop.models.Cart;
-import spring.shop.models.CartItem;
-import spring.shop.models.Customer;
-import spring.shop.models.Product;
+import spring.shop.models.*;
 import spring.shop.repositories.CartRepository;
 import spring.shop.repositories.CustomerRepository;
 import spring.shop.repositories.ProductsRepository;
@@ -24,28 +23,27 @@ public class CartService {
         this.customerRepository = customerRepository;
         this.productsRepository = productsRepository;
     }
-    public Long createCart(Long id) {
-        Customer customer = null;
-        if (id != null) {
-            customer = customerRepository.findById(id)
-                    .orElseThrow(() -> new CustomerNotFound("No such customer with ID %d".formatted(id)));
-            if (cartRepository.existsByCustomer_CustomerId(id)) throw new CartWithCustomerExists("Cart with customer with ID %d already exists".formatted(id));
-        }
+    public Long createCart(String username) {
+        Optional<Customer> customerOptional = customerRepository.findByAccountUsername(username);
+        if (customerOptional.isEmpty()) throw new CustomerNotFound("customer not found for username %s".formatted(username));
+        Customer customer = customerOptional.get();
+        if (cartRepository.existsByCustomerCustomerId(customer.getCustomerId())) throw new CartWithCustomerExists("Cart with customer with ID %d already exists".formatted(customer.getCustomerId()));
 
         Cart cart = new Cart(customer);
         cartRepository.save(cart);
         return cart.getCartId();
     }
-    public Cart getCart(Long id) throws CartNotFound {
-        return cartRepository.findById(id).orElseThrow(() -> new CartNotFound("No such cart with ID %d".formatted(id)));
+    public Cart getCart(String username) throws CartNotFound {
+        return cartRepository.findByCustomerAccountUsername(username).orElseThrow(() -> new CartNotFound("no such cart for %s".formatted(username)));
     }
 
-    public void deleteCart(Long id) throws CartNotFound {
-        cartRepository.deleteById(id);
+    public void deleteCart(String username) throws CartNotFound {
+        Cart cart = cartRepository.findByCustomerAccountUsername(username).orElseThrow(() -> new CartNotFound("no such cart for %s".formatted(username)));
+        cartRepository.deleteById(cart.getCartId());
     }
 
-    public void addProductToCart(Long cartId, Long productId, Integer quantity) throws CartNotFound, ProductNotFound {
-        Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new CartNotFound("No such cart with ID %d".formatted(cartId)));
+    public void addProductToCart(String username, Long productId, Integer quantity) throws CartNotFound, ProductNotFound {
+        Cart cart = cartRepository.findByCustomerAccountUsername(username).orElseThrow(() -> new CartNotFound("No such cart for username %s".formatted(username)));
         Product product = productsRepository.findById(productId).orElseThrow(() -> new ProductNotFound("No such product with ID %d".formatted(productId)));
         Optional<CartItem> cartItem = cart.getItems().stream().filter(item -> item.getProduct().getProductId().equals(productId)).findFirst();
         if (cartItem.isEmpty()) {
@@ -62,8 +60,8 @@ public class CartService {
         }
         cartRepository.save(cart);
     }
-    public void removeProductFromCart(Long cartId, Long productId, Integer quantity) throws CartNotFound, ProductNotFound, CartItemNotFound {
-        Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new CartNotFound("No such cart with ID %d".formatted(cartId)));
+    public void removeProductFromCart(String username, Long productId, Integer quantity) throws CartNotFound, ProductNotFound, CartItemNotFound {
+        Cart cart = cartRepository.findByCustomerAccountUsername(username).orElseThrow(() -> new CartNotFound("No such cart for username %s".formatted(username)));
         Product product = productsRepository.findById(productId).orElseThrow(() -> new ProductNotFound("No such product with ID %d".formatted(productId)));
         Optional<CartItem> cartItem = cart.getItems().stream().filter(item -> item.getProduct().getProductId().equals(productId)).findFirst();
         if (cartItem.isPresent()) {
@@ -80,8 +78,8 @@ public class CartService {
         }
         cartRepository.save(cart);
     }
-    public void deleteProductFromCart(Long cartId, Long productId) throws CartNotFound, ProductNotFound, CartItemNotFound {
-        Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new CartNotFound("No such cart with ID %d".formatted(cartId)));
+    public void deleteProductFromCart(String username, Long productId) throws CartNotFound, ProductNotFound, CartItemNotFound {
+        Cart cart = cartRepository.findByCustomerAccountUsername(username).orElseThrow(() -> new CartNotFound("No such cart for username %s".formatted(username)));
         Product product = productsRepository.findById(productId).orElseThrow(() -> new ProductNotFound("No such product with ID %d".formatted(productId)));
         Optional<CartItem> cartItem = cart.getItems().stream().filter(item -> item.getProduct().getProductId().equals(productId)).findFirst();
         if (cartItem.isPresent()) {

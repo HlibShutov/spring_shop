@@ -48,6 +48,14 @@ public class Customer {
         return customerId;
     }
 
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
+    }
+
     public void setCustomerId(Long customerId) {
         this.customerId = customerId;
     }
@@ -56,6 +64,7 @@ public class Customer {
     @JoinColumn(name="addressId", nullable=false)
     private Address address;
 
-    @OneToOne(mappedBy = "customer")
+    @JsonIgnore
+    @OneToOne(mappedBy = "customer", fetch = FetchType.LAZY)
     private Account account;
 }

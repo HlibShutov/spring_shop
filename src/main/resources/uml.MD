@@ -38,27 +38,29 @@ ProductsRepository <|.. CrudRepository
 
     class CartController {
         -CartService service
-        +getCart(Long id) Cart
-        +createCart(Optional~Long~ customerId) Long
-        +deleteProductFromCart(Long id)
-        +addProductToCart(Long cartId, Long productId, Integer quantity)
-        +removeProductFromCart(Long cartId, Long productId, Integer quantity)
-        +deleteProductFromCart(Long cartId, Long productId)
+        +getCart(Authentication authentication) Cart
+        +createCart(Authentication authentication) Long
+        +deleteProductFromCart(Authentication authentication, Long id)
+        +addProductToCart(Authentication authentication, Long productId, Integer quantity)
+        +removeProductFromCart(Authentication authentication, Long productId, Integer quantity)
+        +deleteProductFromCart(Authentication authentication, Long productId)
         +deleteCart(Long id)
     }
     class CartService {
         -CartRepository repository
-        +getCart(Long id) Cart
-        +createCart(Optional~Long~ customerId) Long
-        +deleteProductFromCart(Long id)
-        +addProductToCart(Long cartId, Long productId, Integer quantity)
-        +removeProductFromCart(Long cartId, Long productId, Integer quantity)
-        +deleteProductFromCart(Long cartId, Long productId)
-        +deleteCart(Long id)
+        +getCart(String username) Cart
+        +createCart(String username) Long
+        +deleteProductFromCart(String username, Long id)
+        +addProductToCart(String username, Long productId, Integer quantity)
+        +removeProductFromCart(String username, Long productId, Integer quantity)
+        +deleteProductFromCart(String username, Long productId)
+        +deleteCart(String username)
     }
     class CartRepository {
         <<Interface>>
-        existsByCustomer_CustomerId(Long customerId) boolean
+        existsByCustomerCustomerId(Long customerId) boolean
+	findByCustomerAccountUsername(String customer) Optional~Cart~
+
     }
     CartController <.. CartService
     CartService <.. CartRepository
@@ -67,7 +69,7 @@ ProductsRepository <|.. CrudRepository
     class Cart {
         -Long cartId
         -List~Product~ items
-        -Optional~Customer~ customer
+        -Customer customer
         -BigDecimal cost
     }
     class CartItem {
@@ -86,7 +88,6 @@ ProductsRepository <|.. CrudRepository
         -String lastname
         -String email
         -Address address
-        @Nullable
         -Account account
     }
     class Address {
@@ -101,26 +102,28 @@ ProductsRepository <|.. CrudRepository
 
     class CustomerController {
         -CustomerService service
-        +getCustomer(Long id) Customer
-        +createCustomer(Customer customer) Long
+        +getCustomer(Authentication authentication) Customer
+        +createCustomer(Authentication authentication, Customer customer) Long
     }
     class CustomerService {
         -CustomerRepository repository
-        +getCustomer(Long id) Customer
-        +createCustomer(Customer customer) Long
+        -AccountRepository AccountRepository
+        +getCustomer(String username) Customer
+        +createCustomer(String username, Customer customer) Long
     }
     class CustomerRepository {
         <<Interface>>
+	findByAccountUsername(String username) Optional~Customer~
     }
     CustomerRepository <|.. CrudRepository
     CustomerService <.. CustomerRepository
+    CustomerService <.. AccountRepository
     CustomerController <.. CustomerService
     CustomerRepository *-- Customer
 
     class Account {
         -String username
         -String password
-        @Nullable
         -Customer customer
     }
 
@@ -131,13 +134,45 @@ ProductsRepository <|.. CrudRepository
     }
     class AccountService {
         -AccountRepository repository
-        +createAccount(String username, String password);
+        +createAccount(String username, String password)
+        +login(String username, String password) jwtDTO
+        +accessToken(String refresh) String
+    }
+    class authDTO {
+        -String username
+        -String password
+    }
+    class jwtDTO {
+        -String access
+        -String refresh
+    }
+    class accessTokenRequest {
+        -String token
     }
     class AccountController {
         -AccountService service
-        +createAccount(String username, String password);
+        +createAccount(authDTO request)
+        +login(authDTO loginRequest) jwtDTO
+        +accessToken(accessTokenRequest refreshToken) String
     }
     AccountRepository <|.. CrudRepository
     AccountService <.. AccountRepository
     AccountController <.. AccountService
     AccountRepository *-- Account
+    AccountController *-- authDTO
+    AccountController *-- jwtDTO
+    AccountController *-- accessTokenRequest
+
+    class JwtService {
+        -long accessTokenExpiration;
+        -long refreshTokenExpiration;
+        -String secretKey;
+
+        +getAccessToken(Account account) String
+        +getRefreshToken(Account account) String
+	    -getSigningKey() SecretKey
+	    +checkToken(String token, String username) boolean
+	    +getUsername(String token) String
+	    +getClaims(String token) Claims
+    }
+    JwtService o-- Account

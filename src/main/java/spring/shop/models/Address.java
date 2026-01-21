@@ -1,5 +1,6 @@
 package spring.shop.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
@@ -19,6 +20,7 @@ public class Address {
         this.customer = customer;
     }
 
+    @JsonIgnore
     @OneToOne(mappedBy = "address")
     private Customer customer;
 

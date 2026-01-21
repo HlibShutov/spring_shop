@@ -8,12 +8,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import spring.shop.exceptions.*;
-import spring.shop.models.Cart;
+import spring.shop.models.*;
+
 import static org.mockito.ArgumentMatchers.any;
 
-import spring.shop.models.CartItem;
-import spring.shop.models.Customer;
-import spring.shop.models.Product;
 import spring.shop.repositories.CartRepository;
 import spring.shop.repositories.CustomerRepository;
 import spring.shop.repositories.ProductsRepository;
@@ -33,50 +31,61 @@ class CartServiceTest {
     private CartRepository cartRepository;
 
     private CartService cartService;
+    private Customer customer;
+    private Account account;
 
     @BeforeEach
     public void setUp() {
         cartService = new CartService(cartRepository, customerRepository, productsRepository);
+        customer = new Customer();
+        customer.setCustomerId((long)0);
+        account = new Account();
+        account.setUsername("username");
+        customer.setAccount(account);
     }
 
     @Test
     public void testGetCart() {
         Cart testCart = new Cart();
+        testCart.setCustomer(customer);
         Mockito
-                .when(cartRepository.findById((long) 0))
+                .when(cartRepository.findByCustomerAccountUsername("username"))
                 .thenReturn(Optional.of(testCart));
-        Cart cart = cartService.getCart((long)0);
-        Mockito.verify(cartRepository).findById((long)0);
+        Cart cart = cartService.getCart("username");
         Assertions.assertEquals(testCart, cart);
     }
 
     @Test
     public void testGetCartNotExist() {
         Mockito
-                .when(cartRepository.findById((long) 0))
+                .when(cartRepository.findByCustomerAccountUsername("username"))
                 .thenReturn(Optional.empty());
         Assertions.assertThrows(CartNotFound.class, () -> {
-            cartService.getCart((long)0);
+            cartService.getCart("username");
         });
-        Mockito.verify(cartRepository).findById((long)0);
     }
 
     @Test
     public void testCreateCart() {
-        cartService.createCart(null);
+        Mockito
+                .when(customerRepository.findByAccountUsername("username"))
+                .thenReturn(Optional.of(customer));
+        cartService.createCart("username");
         Mockito.verify(cartRepository).save(any(Cart.class));
     }
 
     @Test
     public void testCreateCartWithConflictingCustomer() {
-        Mockito.when(cartRepository.existsByCustomer_CustomerId((long) 0)).thenReturn(true);
-        Mockito.when(customerRepository.findById((long) 0)).thenReturn(Optional.of(new Customer()));
-        Assertions.assertThrows(CartWithCustomerExists.class, () -> cartService.createCart((long) 0));
+        Mockito
+                .when(customerRepository.findByAccountUsername("username"))
+                .thenReturn(Optional.of(customer));
+        Mockito.when(cartRepository.existsByCustomerCustomerId((long) 0)).thenReturn(true);
+        Assertions.assertThrows(CartWithCustomerExists.class, () -> cartService.createCart("username"));
     }
 
     @Test
     public void testCreateCartWithInvalidCustomer() {
-        Assertions.assertThrows(CustomerNotFound.class, () -> cartService.createCart((long) 0));
+        Assertions.assertThrows(CustomerNotFound.class, () -> cartService.createCart("username1"));
     }
 
     @Test
@@ -85,8 +94,10 @@ class CartServiceTest {
         Product product = new Product();
         product.setPrice(BigDecimal.TEN);
         Mockito.when(productsRepository.findById((long) 0)).thenReturn(Optional.of(product));
-        Mockito.when(cartRepository.findById((long) 0)).thenReturn(Optional.of(cart));
-        cartService.addProductToCart((long) 0, (long) 0, 5);
+        Mockito
+                .when(cartRepository.findByCustomerAccountUsername("username"))
+                .thenReturn(Optional.of(cart));
+        cartService.addProductToCart("username", (long) 0, 5);
         CartItem cartItem = cart.getItems().get(0);
         Assertions.assertEquals(product, cartItem.getProduct());
         Assertions.assertEquals(5, cartItem.getQuantity());
@@ -105,8 +116,11 @@ class CartServiceTest {
         cart.setItems(List.of(item));
         cart.setCost(BigDecimal.valueOf(30));
         Mockito.when(productsRepository.findById((long) 0)).thenReturn(Optional.of(product));
-        Mockito.when(cartRepository.findById((long) 0)).thenReturn(Optional.of(cart));
-        cartService.addProductToCart((long) 0, (long) 0, 5);
+        Mockito
+                .when(cartRepository.findByCustomerAccountUsername("username"))
+                .thenReturn(Optional.of(cart));
+
+        cartService.addProductToCart("username", (long) 0, 5);
         CartItem cartItem = cart.getItems().get(0);
         Assertions.assertEquals(product, cartItem.getProduct());
         Assertions.assertEquals(8, cartItem.getQuantity());
@@ -116,14 +130,17 @@ class CartServiceTest {
     @Test
     public void testAddProductToCartInvalidCart() {
         Product product = new Product();
-        Assertions.assertThrows(CartNotFound.class, () -> cartService.addProductToCart((long) 0, (long) 0, 5));
+        Assertions.assertThrows(CartNotFound.class, () -> cartService.addProductToCart("username1", (long) 0, 5));
     }
 
     @Test
     public void testAddProductToCartInvalidProduct() {
         Cart cart = new Cart();
-        Mockito.when(cartRepository.findById((long) 0)).thenReturn(Optional.of(cart));
-        Assertions.assertThrows(ProductNotFound.class, () -> cartService.addProductToCart((long) 0, (long) 0, 5));
+        Mockito
+                .when(cartRepository.findByCustomerAccountUsername("username"))
+                .thenReturn(Optional.of(cart));
+
+        Assertions.assertThrows(ProductNotFound.class, () -> cartService.addProductToCart("username", (long) 0, 5));
     }
 
     @Test
@@ -139,9 +156,11 @@ class CartServiceTest {
         cart.setCost(BigDecimal.valueOf(30));
 
         Mockito.when(productsRepository.findById((long) 0)).thenReturn(Optional.of(product));
-        Mockito.when(cartRepository.findById((long) 0)).thenReturn(Optional.of(cart));
+        Mockito
+                .when(cartRepository.findByCustomerAccountUsername("username"))
+                .thenReturn(Optional.of(cart));
 
-        cartService.removeProductFromCart((long) 0, (long) 0, 1);
+        cartService.removeProductFromCart("username", (long) 0, 1);
         CartItem cartItem = cart.getItems().get(0);
 
         Assertions.assertEquals(2, cartItem.getQuantity());
@@ -163,9 +182,11 @@ class CartServiceTest {
         cart.setCost(BigDecimal.valueOf(30));
 
         Mockito.when(productsRepository.findById((long) 0)).thenReturn(Optional.of(product));
-        Mockito.when(cartRepository.findById((long) 0)).thenReturn(Optional.of(cart));
+        Mockito
+                .when(cartRepository.findByCustomerAccountUsername("username"))
+                .thenReturn(Optional.of(cart));
 
-        cartService.removeProductFromCart((long) 0, (long) 0, 3);
+        cartService.removeProductFromCart("username", (long) 0, 3);
         Assertions.assertTrue(cart.getItems().isEmpty());
         Assertions.assertEquals(BigDecimal.ZERO, cart.getCost());
     }
@@ -185,9 +206,12 @@ class CartServiceTest {
         cart.setCost(BigDecimal.valueOf(30));
 
         Mockito.when(productsRepository.findById((long) 0)).thenReturn(Optional.of(product));
-        Mockito.when(cartRepository.findById((long) 0)).thenReturn(Optional.of(cart));
+        Mockito
+                .when(cartRepository.findByCustomerAccountUsername("username"))
+                .thenReturn(Optional.of(cart));
 
-        cartService.deleteProductFromCart((long) 0, (long) 0);
+
+        cartService.deleteProductFromCart("username", (long) 0);
         Assertions.assertTrue(cart.getItems().isEmpty());
         Assertions.assertEquals(BigDecimal.ZERO, cart.getCost());
     }
@@ -197,9 +221,12 @@ class CartServiceTest {
         Cart cart = new Cart(null);
 
         Mockito.when(productsRepository.findById((long) 0)).thenReturn(Optional.empty());
-        Mockito.when(cartRepository.findById((long) 0)).thenReturn(Optional.of(cart));
+        Mockito
+                .when(cartRepository.findByCustomerAccountUsername("username"))
+                .thenReturn(Optional.of(cart));
 
-        Assertions.assertThrows(ProductNotFound.class, () -> cartService.deleteProductFromCart((long) 0, (long) 0));
+
+        Assertions.assertThrows(ProductNotFound.class, () -> cartService.deleteProductFromCart("username", (long) 0));
     }
 
     @Test
@@ -217,8 +244,10 @@ class CartServiceTest {
         cart.setCost(BigDecimal.valueOf(30));
 
         Mockito.when(productsRepository.findById((long) 0)).thenReturn(Optional.of(product));
-        Mockito.when(cartRepository.findById((long) 0)).thenReturn(Optional.of(cart));
+        Mockito
+                .when(cartRepository.findByCustomerAccountUsername("username"))
+                .thenReturn(Optional.of(cart));
 
-        Assertions.assertThrows(InvalidAmount.class, () -> cartService.removeProductFromCart((long) 0, (long) 0, 5));
+        Assertions.assertThrows(InvalidAmount.class, () -> cartService.removeProductFromCart("username", (long) 0, 5));
     }
 }

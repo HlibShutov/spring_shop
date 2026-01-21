@@ -1,5 +1,6 @@
 package spring.shop.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
@@ -13,8 +14,9 @@ public class Cart {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long cartId;
     private BigDecimal cost;
+    @JsonIgnore
     @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
-    @JoinColumn(name="customerId", nullable = true)
+    @JoinColumn(name="customerId", nullable = false)
     private Customer customer;
 
     public Cart() {
@@ -22,7 +24,7 @@ public class Cart {
         this.items = new ArrayList<>();
     }
 
-    public Cart(@Nullable Customer customer) {
+    public Cart(Customer customer) {
         this.cost = BigDecimal.ZERO;
         this.items = new ArrayList<>();
         this.customer = customer;
@@ -36,7 +38,6 @@ public class Cart {
         this.items = items;
     }
 
-    @Nullable
     public Customer getCustomer() {
         return customer;
     }

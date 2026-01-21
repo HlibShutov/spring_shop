@@ -1,6 +1,8 @@
 package spring.shop.controllers;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import spring.shop.exceptions.*;
 import spring.shop.models.Cart;
@@ -17,34 +19,34 @@ public class CartController {
 
     private CartService service;
 
-    @GetMapping(value = {"/create_cart/{id}", "/create_cart"}, produces = "application/json")
-    public Long createCart(@PathVariable(required = false) Long id) {
-        return service.createCart(id);
+    @GetMapping(value = "/create_cart", produces = "application/json")
+    public Long createCart(Authentication authentication) {
+        return service.createCart(authentication.getName());
     }
 
-    @GetMapping(value = "/get_cart/{id}", produces = "application/json")
-    public Cart getCart(@PathVariable Long id) {
-        return service.getCart(id);
+    @GetMapping(value = "/get_cart", produces = "application/json")
+    public Cart getCart(Authentication authentication) {
+        return service.getCart(authentication.getName());
     }
 
-    @GetMapping(value = "/delete_cart/{id}")
-    public void deleteCart(@PathVariable Long id) {
-        service.deleteCart(id);
+    @GetMapping(value = "/delete_cart")
+    public void deleteCart(Authentication authentication) {
+        service.deleteCart(authentication.getName());
     }
 
-    @GetMapping(value = "/add_product_to_cart/{cartId}")
-    public void addProductToCart(@PathVariable Long cartId, @RequestParam(name = "product_id") Long productId, @RequestParam Integer quantity) {
-        service.addProductToCart(cartId, productId, quantity);
+    @GetMapping(value = "/add_product_to_cart/{productId}")
+    public void addProductToCart(Authentication authentication, @PathVariable Long productId, @RequestParam Integer quantity) {
+        service.addProductToCart(authentication.getName(), productId, quantity);
     }
 
-    @GetMapping(value = "/remove_product_from_cart/{cartId}")
-    public void removeProductFromCart(@PathVariable Long cartId, @RequestParam(name = "product_id") Long productId, @RequestParam Integer quantity) {
-        service.removeProductFromCart(cartId, productId, quantity);
+    @GetMapping(value = "/remove_product_from_cart/{productId}")
+    public void removeProductFromCart(@PathVariable Long productId, @RequestParam Integer quantity, Authentication authentication) {
+        service.removeProductFromCart(authentication.getName(), productId, quantity);
     }
 
-    @GetMapping(value = "/delete_product_from_cart/{cartId}")
-    public void deleteProductFromCart(@PathVariable Long cartId, @RequestParam(name = "product_id") Long productId) {
-        service.deleteProductFromCart(cartId, productId);
+    @GetMapping(value = "/delete_product_from_cart/{productId}")
+    public void deleteProductFromCart(Authentication authentication, @PathVariable Long productId) {
+        service.deleteProductFromCart(authentication.getName(), productId);
     }
 
     @ExceptionHandler(CartNotFound.class)
