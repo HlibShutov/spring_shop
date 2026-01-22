@@ -1,6 +1,8 @@
 package spring.shop.controllers;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import spring.shop.exceptions.ProductNotFound;
 import spring.shop.models.Product;
@@ -40,6 +42,18 @@ public class ProductsController {
         serializedProduct.put("price", product.getPrice());
         serializedProduct.put("images", product.getImages());
         return serializedProduct;
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping(value = "/create_product", produces = "application/json")
+    public long createProduct(@RequestBody Product product) {
+        return service.createProduct(product);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping(value = "/delete_product/{id}", produces = "application/json")
+    public void deleteProduct(@PathVariable Long id) {
+        service.deleteProduct(id);
     }
 
     @ExceptionHandler(ProductNotFound.class)

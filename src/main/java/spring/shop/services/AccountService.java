@@ -9,7 +9,10 @@ import org.springframework.stereotype.Service;
 import spring.shop.controllers.AccountConroller;
 import spring.shop.exceptions.AccountNotFound;
 import spring.shop.models.Account;
+import spring.shop.models.Role;
 import spring.shop.repositories.AccountRepository;
+
+import java.util.Set;
 
 @Service
 public class AccountService {
@@ -28,6 +31,7 @@ public class AccountService {
     public void createAccount(String username, String password) {
         Account account = new Account();
         account.setUsername(username);
+        account.setRoles(Set.of(Role.USER));
         account.setPassword(passwordEncoder.encode(password));
         repository.save(account);
     }

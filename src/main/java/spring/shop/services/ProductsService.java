@@ -19,4 +19,13 @@ public class ProductsService {
     public Product getProduct(Long id) throws ProductNotFound {
         return repository.findById(id).orElseThrow(() -> new ProductNotFound("No such product with ID %d".formatted(id)));
     }
+
+    public long createProduct(Product product) {
+        repository.save(product);
+        return product.getProductId();
+    }
+
+    public void deleteProduct(Long id) {
+        repository.deleteById(id);
+    }
 }

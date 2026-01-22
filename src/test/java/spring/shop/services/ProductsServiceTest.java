@@ -14,6 +14,8 @@ import spring.shop.repositories.ProductsRepository;
 import java.util.List;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
+
 @ExtendWith(MockitoExtension.class)
 class ProductsServiceTest {
     @Mock
@@ -57,5 +59,20 @@ class ProductsServiceTest {
             productsService.getProduct((long)0);
         });
         Mockito.verify(productsRepository).findById((long)0);
+    }
+
+    @Test
+    public void testDeleteProduct() {
+        productsService.deleteProduct((long)0);
+        Mockito.verify(productsRepository).deleteById((long)0);
+    }
+
+    @Test
+    public void testCreateProduct() {
+        Product product = new Product();
+        product.setProductId((long)0);
+        productsService.createProduct(product);
+        Mockito.verify(productsRepository).save(any(Product.class));
+
     }
 }
