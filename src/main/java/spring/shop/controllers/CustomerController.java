@@ -26,7 +26,7 @@ public class CustomerController {
         return service.getCustomer(authentication.getName());
     }
 
-    @PostMapping(value = "/create_customer", produces = "application/json")
+    @PostMapping(value = "/customer", produces = "application/json")
     public Long createCustomer(Authentication authentication, @RequestBody Customer customer) {
         return service.createCustomer(authentication.getName(), customer);
     }

@@ -23,7 +23,7 @@ public class AccountConroller {
     public record accessTokenRequest(String token) {
     }
 
-    @PostMapping("/create_account")
+    @PostMapping("/account")
     public void createAccount(@RequestBody authDTO request) {
         service.createAccount(request.username(), request.password());
     }

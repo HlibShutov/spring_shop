@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
+@RequestMapping("/cart")
 public class CartController {
     public CartController(CartService service) {
         this.service = service;
@@ -19,32 +20,33 @@ public class CartController {
 
     private CartService service;
 
-    @GetMapping(value = "/create_cart", produces = "application/json")
+    @GetMapping(value = "/create", produces = "application/json")
+    @ResponseStatus(HttpStatus.CREATED)
     public Long createCart(Authentication authentication) {
         return service.createCart(authentication.getName());
     }
 
-    @GetMapping(value = "/get_cart", produces = "application/json")
+    @GetMapping(value = "/", produces = "application/json")
     public Cart getCart(Authentication authentication) {
         return service.getCart(authentication.getName());
     }
 
-    @GetMapping(value = "/delete_cart")
+    @DeleteMapping(value = "/")
     public void deleteCart(Authentication authentication) {
         service.deleteCart(authentication.getName());
     }
 
-    @GetMapping(value = "/add_product_to_cart/{productId}")
+    @PutMapping(value = "/product/{productId}")
     public void addProductToCart(Authentication authentication, @PathVariable Long productId, @RequestParam Integer quantity) {
         service.addProductToCart(authentication.getName(), productId, quantity);
     }
 
-    @GetMapping(value = "/remove_product_from_cart/{productId}")
+    @PatchMapping(value = "/product/{productId}")
     public void removeProductFromCart(@PathVariable Long productId, @RequestParam Integer quantity, Authentication authentication) {
         service.removeProductFromCart(authentication.getName(), productId, quantity);
     }
 
-    @GetMapping(value = "/delete_product_from_cart/{productId}")
+    @DeleteMapping(value = "/product/{productId}")
     public void deleteProductFromCart(Authentication authentication, @PathVariable Long productId) {
         service.deleteProductFromCart(authentication.getName(), productId);
     }

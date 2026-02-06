@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import spring.shop.exceptions.CartNotFound;
 import spring.shop.exceptions.ProductNotFound;
 import spring.shop.models.Product;
 import spring.shop.services.ProductsService;
@@ -46,12 +47,13 @@ public class ProductsController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/create_product", produces = "application/json")
+    @ResponseStatus(HttpStatus.CREATED)
     public long createProduct(@RequestBody Product product) {
         return service.createProduct(product);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping(value = "/delete_product/{id}", produces = "application/json")
+    @DeleteMapping(value = "/delete_product/{id}", produces = "application/json")
     public void deleteProduct(@PathVariable Long id) {
         service.deleteProduct(id);
     }
